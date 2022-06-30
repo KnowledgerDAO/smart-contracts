@@ -151,6 +151,13 @@ interface IKnowledgerNFT {
         returns (Content memory);
 
     /**
+     * @dev This method makes possible return the contents related to a publisher.
+     *
+     * @return {Content[]} Returns the contents, otherwise throws.
+     */
+    function getPublisherContents() external view returns (Content[] memory);
+
+    /**
      * @dev This method makes possible return the contents related to a buyer.
      *
      * @return {Content[]} Returns the contents, otherwise throws.

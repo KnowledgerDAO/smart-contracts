@@ -38,7 +38,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
         buyer = new BuyerContract(owner);
         publisher = new PublisherContract();
         reviewer = new ReviewerContract();
-        content = new ContentContract(reviewer);
+        content = new ContentContract(reviewer, publisher);
     }
 
     /**
@@ -205,6 +205,20 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
         returns (Content memory)
     {
         return content.getContent(_tokenId);
+    }
+
+    /**
+     * @dev See {IKnowledgerNFT-getPublisherContents}.
+     */
+    function getPublisherContents() external view returns (Content[] memory) {
+        uint256[] memory _tokenIds = publisher.getTokens(msg.sender);
+        Content[] memory _contents = new Content[](0);
+        uint256 _count = 0;
+        for (uint256 i; i < _tokenIds.length; i++) {
+            _contents[_count] = content.getContent(_tokenIds[i]);
+            _count++;
+        }
+        return _contents;
     }
 
     /**

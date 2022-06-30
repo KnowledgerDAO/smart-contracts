@@ -7,6 +7,7 @@ import {Address} from "../../utils/address.sol";
 contract Publisher is IPublisher {
     mapping(address => uint256) private publishers;
     address[] private publisherAddresses;
+    mapping(address => uint256[]) publisherTokens;
 
     constructor() {
         publisherAddresses = new address[](0);
@@ -32,6 +33,32 @@ contract Publisher is IPublisher {
     {
         delete publisherAddresses[publishers[_publisher]];
         delete publishers[_publisher];
+    }
+
+    /**
+     * @dev See {IPublisher-getTokens}.
+     */
+    function getTokens(address _publisher)
+        external
+        view
+        _checkExistingPublisher(_publisher)
+        returns (uint256[] memory)
+    {
+        require(
+            publisherTokens[_publisher].length > 0,
+            "This publisher doesn't have any content assigned"
+        );
+        return publisherTokens[_publisher];
+    }
+
+    /**
+     * @dev See {IPublisher-assignTokenId}.
+     */
+    function assignTokenId(address _publisher, uint256 _tokenId)
+        external
+        _checkExistingPublisher(_publisher)
+    {
+        publisherTokens[_publisher].push(_tokenId);
     }
 
     /**

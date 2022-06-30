@@ -6,6 +6,7 @@ import {IContent} from "./content.interface.sol";
 import {Address} from "../../utils/address.sol";
 import {Number} from "../../utils/number.sol";
 import {IReviewer} from "../reviewer/reviewer.interface.sol";
+import {IPublisher} from "../publisher/publisher.interface.sol";
 import {Assessment, Content as ContentStruct, Purchase} from "./content.struct.sol";
 import {AssessmentApproved, AssessmentDenied} from "./content.constants.sol";
 import {ContentStatus} from "./content.enum.sol";
@@ -14,9 +15,11 @@ contract Content is IContent {
     mapping(uint256 => ContentStruct) private contents;
     uint256 private contentIndex;
     IReviewer private reviewer;
+    IPublisher private publisher;
 
-    constructor(IReviewer _reviewer) {
+    constructor(IReviewer _reviewer, IPublisher _publisher) {
         contentIndex = 0;
+        publisher = _publisher;
         reviewer = _reviewer;
     }
 
@@ -71,6 +74,10 @@ contract Content is IContent {
         reviewer.assignTokenId(_reviewer1, contents[contentIndex].tokenId);
         reviewer.assignTokenId(_reviewer2, contents[contentIndex].tokenId);
         reviewer.assignTokenId(_reviewer3, contents[contentIndex].tokenId);
+        publisher.assignTokenId(
+            contents[contentIndex].publisher,
+            contents[contentIndex].tokenId
+        );
 
         return _indexContentCreated;
     }
