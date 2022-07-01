@@ -6,7 +6,12 @@ import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 
 contract Knowledger is ERC20, ERC20Permit, ERC20Votes {
-    constructor() ERC20("Knowledger", "KLD") ERC20Permit("Knowledger") {}
+    constructor(uint256 _initialSupply)
+        ERC20("Knowledger", "KLD")
+        ERC20Permit("Knowledger")
+    {
+        _mint(msg.sender, _initialSupply);
+    }
 
     // The following functions are overrides required by Solidity.
 
