@@ -3,7 +3,7 @@ pragma solidity ^0.8.14;
 
 import "@openzeppelin/contracts/governance/TimelockController.sol";
 
-contract TimeLock is TimelockController {
+contract Timelock is TimelockController {
   /**
    * @dev The parameters below can give us a little brief description about their meaning:
    *
@@ -15,5 +15,6 @@ contract TimeLock is TimelockController {
     uint256 _minDelay,
     address[] memory _proposers,
     address[] memory _executors
-  ) TimelockController(_minDelay, _proposers, _executors) {}
+  ) TimelockController(_minDelay, _proposers, _executors) {
+  }
 }

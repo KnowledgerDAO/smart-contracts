@@ -37,7 +37,8 @@ contract("KnowledgerTreasure", function ([owner, anotherOwner]) {
         });
 
         it("should fail whenever another owner attempts to store a new value", async () => {
-            await contract.store(VALUE_TO_STORE, { from: anotherOwner }).should.be.rejected;
+            await contract.store(VALUE_TO_STORE, { from: anotherOwner })
+                .should.be.rejectedWith(/caller is not the owner/);
         });
     });
 
@@ -58,14 +59,16 @@ contract("KnowledgerTreasure", function ([owner, anotherOwner]) {
 
         it("should fail whenever another address attempts to transfer the ownership without the right grant", async () => {
             const oldOwner = owner;
-            await contract.transferOwnership(oldOwner, { from: oldOwner }).should.be.rejected;
+            await contract.transferOwnership(oldOwner, { from: oldOwner })
+                .should.be.rejectedWith(/caller is not the owner/);
         });
     });
 
     describe(".renounceOwnership", () => {
         it("should fail whenever another address attempts to renounce the ownership without the right grant", async () => {
             const oldOwner = owner;
-            await contract.renounceOwnership({ from: oldOwner }).should.be.rejected;
+            await contract.renounceOwnership({ from: oldOwner })
+                .should.be.rejectedWith(/caller is not the owner/);
         });
 
         it("should renounce the ownership successfully", async () => {

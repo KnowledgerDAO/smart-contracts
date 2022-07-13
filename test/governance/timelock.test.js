@@ -1,0 +1,73 @@
+const { expect } = require("chai")
+const { v4: uuid } = require("uuid");
+const KnowledgerTimelock = artifacts.require("Timelock");
+const web3 = require('web3');
+
+require("chai")
+    .use(require("chai-as-promised"))
+    .should();
+
+/*
+ * uncomment accounts to access the test accounts made available by the
+ * Ethereum client
+ * See docs: https://www.trufflesuite.com/docs/truffle/testing/writing-tests-in-javascript
+ */
+contract("KnowledgerTimelock", function ([admin, proposer1, proposer2, executor1, executor2, target]) {
+
+    const SCHEDULE_EVENT_NAME = "CallScheduled";
+    const MIN_DELAY = 60000;
+    const METADATA = Buffer.from("test");
+    const PREDECESSOR = web3.utils.asciiToHex(uuid().substring(0, 10));
+    const SALT = web3.utils.asciiToHex(uuid().substring(0, 10));
+
+    let contract;
+
+    before(async () => {
+        contract = await KnowledgerTimelock.deployed();
+    });
+
+    describe(".getMinDelay", () => {
+        it("should retrieve the min delay with success", async () => {
+            const minDelay = await contract.getMinDelay.call();
+            expect(minDelay.toNumber()).to.eq(MIN_DELAY);
+        });
+    });
+
+    describe(".schedule", () => {
+        let id;
+
+        const value = 10;
+
+        it("should schedule an operation containing a single transaction", async () => {
+            const result = await contract.schedule(target, value, METADATA, PREDECESSOR, SALT, MIN_DELAY, { from: proposer1 });
+            const event = result.logs.find(log => log.event === SCHEDULE_EVENT_NAME).args;
+            id = event.id;
+            expect(event.id).to.not.eq(null);
+            expect(event.index.toNumber()).to.eq(0);
+            expect(event.target).to.eq(target);
+            expect(event.value.toNumber()).to.eq(value);
+            expect(web3.utils.hexToAscii(event.data)).to.eq(METADATA.toString());
+            expect(web3.utils.toUtf8(event.predecessor)).to.eq(web3.utils.toUtf8(PREDECESSOR));
+            expect(event.delay.toNumber()).to.eq(MIN_DELAY);
+        });
+
+        it('should check with success that the new operation was scheduled and exists', async () => {
+            expect(await contract.isOperation.call(id)).to.eq(true);
+        });
+
+        it(`shouldn't allow schedule an operation because it already exists`, async () => {
+            await contract.schedule(target, value, METADATA, PREDECESSOR, SALT, MIN_DELAY, { from: proposer1 })
+                .should.be.rejectedWith(/operation already scheduled/);
+        });
+
+        it(`shouldn't allow schedule an operation because it doesn't achieve the minimum delay`, async () => {
+            await contract.schedule(target, value + 1, METADATA, PREDECESSOR, SALT, MIN_DELAY - 1, { from: proposer1 })
+                .should.be.rejectedWith(/insufficient delay/);
+        });
+
+        it(`shouldn't allow schedule an operation for a non granted address`, async () => {
+            await contract.schedule(target, value, METADATA, PREDECESSOR, SALT, MIN_DELAY, { from: executor1 })
+                .should.be.rejectedWith(/is missing role/);
+        });
+    });
+});
