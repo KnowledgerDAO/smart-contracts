@@ -10,7 +10,9 @@
     "compile": "truffle compile",
     "contract-size": "truffle run contract-size",
     "deploy": "yarn compile && rm -f ./build/*.json && truffle migrate",
-    "test": "truffle test"
+    "test": "truffle test",
+    "test:e2e": "docker-compose build && docker-compose -p knowledger-test-service up -V --force-recreate --exit-code-from truffle",
+    "posttest:e2e": "docker-compose -p knowledger-test-service down -v"
   },
   "author": "",
   "license": "ISC",

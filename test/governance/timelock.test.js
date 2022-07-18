@@ -1,7 +1,8 @@
 const { expect } = require("chai")
 const { v4: uuid } = require("uuid");
 const KnowledgerTimelock = artifacts.require("Timelock");
-const web3 = require('web3');
+// const web3 = require('web3');
+const Time = require('../utils/time');
 
 require("chai")
     .use(require("chai-as-promised"))
@@ -15,7 +16,8 @@ require("chai")
 contract("KnowledgerTimelock", function ([admin, proposer1, proposer2, executor1, executor2, target]) {
 
     const SCHEDULE_EVENT_NAME = "CallScheduled";
-    const MIN_DELAY = 60000;
+    const EXECUTED_EVENT_NAME = "CallExecuted";
+    const MIN_DELAY = 1000 * 5;
     const METADATA = Buffer.from("test");
     const PREDECESSOR = web3.utils.asciiToHex(uuid().substring(0, 10));
     const SALT = web3.utils.asciiToHex(uuid().substring(0, 10));
@@ -33,41 +35,71 @@ contract("KnowledgerTimelock", function ([admin, proposer1, proposer2, executor1
         });
     });
 
-    describe(".schedule", () => {
+    describe('schedule and execute', () => {
         let id;
-
         const value = 10;
 
-        it("should schedule an operation containing a single transaction", async () => {
-            const result = await contract.schedule(target, value, METADATA, PREDECESSOR, SALT, MIN_DELAY, { from: proposer1 });
-            const event = result.logs.find(log => log.event === SCHEDULE_EVENT_NAME).args;
-            id = event.id;
-            expect(event.id).to.not.eq(null);
-            expect(event.index.toNumber()).to.eq(0);
-            expect(event.target).to.eq(target);
-            expect(event.value.toNumber()).to.eq(value);
-            expect(web3.utils.hexToAscii(event.data)).to.eq(METADATA.toString());
-            expect(web3.utils.toUtf8(event.predecessor)).to.eq(web3.utils.toUtf8(PREDECESSOR));
-            expect(event.delay.toNumber()).to.eq(MIN_DELAY);
+        describe(".schedule", () => {
+            it("should schedule an operation containing a single transaction", async () => {
+                const result = await contract.schedule(target, value, METADATA, PREDECESSOR, SALT, MIN_DELAY, { from: proposer1 });
+                const event = result.logs.find(log => log.event === SCHEDULE_EVENT_NAME).args;
+                id = event.id;
+                expect(event.id).to.not.eq(null);
+                expect(event.index.toNumber()).to.eq(0);
+                expect(event.target).to.eq(target);
+                expect(event.value.toNumber()).to.eq(value);
+                expect(web3.utils.hexToAscii(event.data)).to.eq(METADATA.toString());
+                expect(web3.utils.toUtf8(event.predecessor)).to.eq(web3.utils.toUtf8(PREDECESSOR));
+                expect(event.delay.toNumber()).to.eq(MIN_DELAY);
+            });
+    
+            it('should check with success that the new operation was scheduled and exists', async () => {
+                expect(await contract.isOperation.call(id)).to.eq(true);
+                expect(await contract.isOperationPending.call(id)).to.eq(true);
+                expect(await contract.isOperationReady.call(id)).to.eq(false);
+                expect(await contract.isOperationDone.call(id)).to.eq(false);
+            });
+    
+            it(`shouldn't allow schedule an operation because it already exists`, async () => {
+                await contract.schedule(target, value, METADATA, PREDECESSOR, SALT, MIN_DELAY, { from: proposer1 })
+                    .should.be.rejectedWith(/operation already scheduled/);
+            });
+    
+            it(`shouldn't allow schedule an operation because it doesn't achieve the minimum delay`, async () => {
+                await contract.schedule(target, value + 1, METADATA, PREDECESSOR, SALT, MIN_DELAY - 1, { from: proposer1 })
+                    .should.be.rejectedWith(/insufficient delay/);
+            });
+    
+            it(`shouldn't allow schedule an operation for a non granted address`, async () => {
+                await contract.schedule(target, value, METADATA, PREDECESSOR, SALT, MIN_DELAY, { from: executor1 })
+                    .should.be.rejectedWith(/is missing role/);
+            });
         });
-
-        it('should check with success that the new operation was scheduled and exists', async () => {
-            expect(await contract.isOperation.call(id)).to.eq(true);
-        });
-
-        it(`shouldn't allow schedule an operation because it already exists`, async () => {
-            await contract.schedule(target, value, METADATA, PREDECESSOR, SALT, MIN_DELAY, { from: proposer1 })
-                .should.be.rejectedWith(/operation already scheduled/);
-        });
-
-        it(`shouldn't allow schedule an operation because it doesn't achieve the minimum delay`, async () => {
-            await contract.schedule(target, value + 1, METADATA, PREDECESSOR, SALT, MIN_DELAY - 1, { from: proposer1 })
-                .should.be.rejectedWith(/insufficient delay/);
-        });
-
-        it(`shouldn't allow schedule an operation for a non granted address`, async () => {
-            await contract.schedule(target, value, METADATA, PREDECESSOR, SALT, MIN_DELAY, { from: executor1 })
-                .should.be.rejectedWith(/is missing role/);
+    
+        describe(".execute", () => {
+            it("should execute an operation containing a single transaction", async () => {
+                const result = await contract.execute(target, value, METADATA, PREDECESSOR, SALT, { from: executor1 });
+                const event = result.logs.find(log => log.event === EXECUTED_EVENT_NAME).args;
+                expect(event.id).to.not.eq(id);
+                expect(event.index.toNumber()).to.eq(0);
+                expect(event.target).to.eq(target);
+                expect(event.value.toNumber()).to.eq(value);
+                expect(web3.utils.hexToAscii(event.data)).to.eq(METADATA.toString());
+                expect(web3.utils.toUtf8(event.predecessor)).to.eq(web3.utils.toUtf8(PREDECESSOR));
+            });
+    
+            it('should check with success that the new operation was executed and exists', async () => {
+                expect(await contract.isOperation.call(id)).to.eq(true);
+                expect(await contract.isOperationPending.call(id)).to.eq(false);
+                expect(await contract.isOperationReady.call(id)).to.eq(true);
+                expect(await contract.isOperationDone.call(id)).to.eq(false);
+            });
+    
+            it(`shouldn't allow execute an operation for a non granted address`, async () => {
+                await contract.execute(target, value, METADATA, PREDECESSOR, SALT, { from: proposer1 })
+                    .should.be.rejectedWith(/is missing role/);
+            });
         });
     });
+
 });
