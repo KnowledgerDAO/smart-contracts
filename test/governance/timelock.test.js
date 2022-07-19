@@ -3,6 +3,7 @@ const { v4: uuid } = require("uuid");
 const KnowledgerTimelock = artifacts.require("Timelock");
 // const web3 = require('web3');
 const Time = require('../utils/time');
+const TruffleUtils = require('../utils/truffle');
 
 require("chai")
     .use(require("chai-as-promised"))
@@ -17,7 +18,7 @@ contract("KnowledgerTimelock", function ([admin, proposer1, proposer2, executor1
 
     const SCHEDULE_EVENT_NAME = "CallScheduled";
     const EXECUTED_EVENT_NAME = "CallExecuted";
-    const MIN_DELAY = 1000 * 5;
+    const MIN_DELAY = 5;
     const METADATA = Buffer.from("test");
     const PREDECESSOR = web3.utils.asciiToHex(uuid().substring(0, 10));
     const SALT = web3.utils.asciiToHex(uuid().substring(0, 10));
@@ -77,6 +78,16 @@ contract("KnowledgerTimelock", function ([admin, proposer1, proposer2, executor1
         });
     
         describe(".execute", () => {
+            before(async () => {
+                const oldBlock = await web3.eth.getBlock('latest');
+                await TruffleUtils.advanceBlockAfterSomeSeconds(web3, MIN_DELAY + 1);
+                const block = await web3.eth.getBlock('latest');
+                const timestampOperation = await contract.getTimestamp.call(id);
+                console.log(oldBlock.timestamp);
+                console.log(block.timestamp);
+                console.log(timestampOperation.toNumber());
+            });
+
             it("should execute an operation containing a single transaction", async () => {
                 const result = await contract.execute(target, value, METADATA, PREDECESSOR, SALT, { from: executor1 });
                 const event = result.logs.find(log => log.event === EXECUTED_EVENT_NAME).args;
@@ -90,7 +101,7 @@ contract("KnowledgerTimelock", function ([admin, proposer1, proposer2, executor1
     
             it('should check with success that the new operation was executed and exists', async () => {
                 expect(await contract.isOperation.call(id)).to.eq(true);
-                expect(await contract.isOperationPending.call(id)).to.eq(false);
+                expect(await contract.isOperationPending.call(id)).to.eq(true);
                 expect(await contract.isOperationReady.call(id)).to.eq(true);
                 expect(await contract.isOperationDone.call(id)).to.eq(false);
             });
