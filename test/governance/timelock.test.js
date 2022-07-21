@@ -19,8 +19,8 @@ contract("KnowledgerTimelock", function ([admin, proposer1, proposer2, executor1
     const SCHEDULE_EVENT_NAME = "CallScheduled";
     const EXECUTED_EVENT_NAME = "CallExecuted";
     const MIN_DELAY = 5;
-    const METADATA = Buffer.from("test");
-    const PREDECESSOR = web3.utils.asciiToHex(uuid().substring(0, 10));
+    const METADATA = web3.utils.asciiToHex("");
+    const PREDECESSOR = web3.utils.toHex(0);
     const SALT = web3.utils.asciiToHex(uuid().substring(0, 10));
 
     let contract;
@@ -49,8 +49,8 @@ contract("KnowledgerTimelock", function ([admin, proposer1, proposer2, executor1
                 expect(event.index.toNumber()).to.eq(0);
                 expect(event.target).to.eq(target);
                 expect(event.value.toNumber()).to.eq(value);
-                expect(web3.utils.hexToAscii(event.data)).to.eq(METADATA.toString());
-                expect(web3.utils.toUtf8(event.predecessor)).to.eq(web3.utils.toUtf8(PREDECESSOR));
+                expect(event.data).to.eq(METADATA.toString());
+                expect(web3.utils.toUtf8(event.predecessor)).to.eq('');
                 expect(event.delay.toNumber()).to.eq(MIN_DELAY);
             });
     
@@ -79,13 +79,9 @@ contract("KnowledgerTimelock", function ([admin, proposer1, proposer2, executor1
     
         describe(".execute", () => {
             before(async () => {
-                const oldBlock = await web3.eth.getBlock('latest');
                 await TruffleUtils.advanceBlockAfterSomeSeconds(web3, MIN_DELAY + 1);
-                const block = await web3.eth.getBlock('latest');
-                const timestampOperation = await contract.getTimestamp.call(id);
-                console.log(oldBlock.timestamp);
-                console.log(block.timestamp);
-                console.log(timestampOperation.toNumber());
+                // const block = await web3.eth.getBlock('latest');
+                // const timestampOperation = await contract.getTimestamp.call(id);
             });
 
             it("should execute an operation containing a single transaction", async () => {
