@@ -31,14 +31,18 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
     IBuyer private buyer;
     IContent private content;
 
-    constructor(address payable[] memory _owners)
-        AbstractKnowledgerNFT("Knowledger", "KLDN")
-    {
-        owner = new OwnerContract(_owners);
-        buyer = new BuyerContract(owner);
-        publisher = new PublisherContract();
-        reviewer = new ReviewerContract();
-        content = new ContentContract(reviewer, publisher);
+    constructor(
+        IOwner _owner,
+        IPublisher _publisher,
+        IReviewer _reviewer,
+        IBuyer _buyer,
+        IContent _content
+    ) AbstractKnowledgerNFT("Knowledger", "KLDN") {
+        owner = _owner;
+        buyer = _buyer;
+        publisher = _publisher;
+        reviewer = _reviewer;
+        content = _content;
     }
 
     /**
