@@ -3,7 +3,7 @@ pragma solidity ^0.8.14;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IContent} from "./content.interface.sol";
-import {Address} from "../../utils/address.sol";
+import {AddressUtils} from "../../utils/address.sol";
 import {Number} from "../../utils/number.sol";
 import {IReviewer} from "../reviewer/reviewer.interface.sol";
 import {IPublisher} from "../publisher/publisher.interface.sol";
@@ -237,7 +237,7 @@ contract Content is IContent {
      * @dev Check if a proposal approval has the minimum requirements
      */
     modifier checkApproval(uint256 _tokenId, address _reviewer) {
-        Address.checkCaller(_reviewer);
+        AddressUtils.checkCaller(_reviewer);
         require(
             contents[_tokenId].status != ContentStatus.PROPOSED,
             "The token was already approved/denied"
@@ -249,7 +249,7 @@ contract Content is IContent {
      * @dev Check if a proposal denial has the minimum requirements
      */
     modifier checkDenial(uint256 _tokenId, address _reviewer) {
-        Address.checkCaller(_reviewer);
+        AddressUtils.checkCaller(_reviewer);
         require(
             contents[_tokenId].status != ContentStatus.PROPOSED,
             "The token was already approved/denied"

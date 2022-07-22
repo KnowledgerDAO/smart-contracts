@@ -2,7 +2,7 @@
 pragma solidity ^0.8.14;
 
 import {IBuyer} from "./buyer.interface.sol";
-import {Address} from "../../utils/address.sol";
+import {AddressUtils} from "../../utils/address.sol";
 import {Content} from "../content/content.struct.sol";
 import {ContentStatus} from "../content/content.enum.sol";
 import {IOwner} from "../owner/owner.interface.sol";
@@ -139,7 +139,7 @@ contract Buyer is IBuyer {
         private
         view
     {
-        Address.checkCaller(_buyer);
+        AddressUtils.checkCaller(_buyer);
         require(
             _content.status == ContentStatus.APPROVED,
             "To buy a content it must to be approved"
@@ -154,7 +154,7 @@ contract Buyer is IBuyer {
             buyerAddresses[buyers[_buyer]] == _buyer,
             "Buyer already exists"
         );
-        Address.checkCaller(_buyer);
+        AddressUtils.checkCaller(_buyer);
     }
 
     /**
@@ -190,7 +190,7 @@ contract Buyer is IBuyer {
      * @dev Check if an address is the caller of the transaction
      */
     modifier checkCaller(address _caller) {
-        Address.checkCaller(_caller);
+        AddressUtils.checkCaller(_caller);
         _;
     }
 }

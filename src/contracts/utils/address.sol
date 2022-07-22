@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.14;
 
-library Address {
+library AddressUtils {
     /**
      * @dev Check if an address is the caller of the transaction
      */

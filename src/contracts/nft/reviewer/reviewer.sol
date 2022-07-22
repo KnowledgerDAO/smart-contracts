@@ -2,7 +2,7 @@
 pragma solidity ^0.8.14;
 
 import {IReviewer} from "./reviewer.interface.sol";
-import {Address} from "../../utils/address.sol";
+import {AddressUtils} from "../../utils/address.sol";
 import {Content} from "../content/content.struct.sol";
 
 contract Reviewer is IReviewer {
@@ -77,7 +77,7 @@ contract Reviewer is IReviewer {
             reviewerAddresses[reviewers[_reviewer]] == _reviewer,
             "Reviewer already exists"
         );
-        Address.checkCaller(_reviewer);
+        AddressUtils.checkCaller(_reviewer);
     }
 
     /**
@@ -92,7 +92,7 @@ contract Reviewer is IReviewer {
      * @dev Check if an address is the caller of the transaction
      */
     modifier checkCaller(address _caller) {
-        Address.checkCaller(_caller);
+        AddressUtils.checkCaller(_caller);
         _;
     }
 }

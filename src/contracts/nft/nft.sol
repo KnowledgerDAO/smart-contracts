@@ -7,7 +7,7 @@ import {IKnowledgerNFT} from "./nft.interface.sol";
 import {Assessment, Content, Purchase} from "./content/content.struct.sol";
 import {AssessmentApproved, AssessmentDenied} from "./content/content.constants.sol";
 import {Number} from "../utils/number.sol";
-import {Address} from "../utils/address.sol";
+import {AddressUtils} from "../utils/address.sol";
 import {IOwner} from "./owner/owner.interface.sol";
 import {IBuyer} from "./buyer/buyer.interface.sol";
 import {IReviewer} from "./reviewer/reviewer.interface.sol";
@@ -289,7 +289,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
      * @dev Check if an address is the caller of the transaction
      */
     modifier checkCaller(address _caller) {
-        Address.checkCaller(_caller);
+        AddressUtils.checkCaller(_caller);
         _;
     }
 
@@ -309,7 +309,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
      * @dev Check if a proposal approval has the minimum requirements
      */
     modifier checkApproval(uint256 _tokenId, address _reviewer) {
-        Address.checkCaller(_reviewer);
+        AddressUtils.checkCaller(_reviewer);
         _checkRole(REVIEWER_ROLE);
         _checkExistingToken(_tokenId);
         _;
@@ -319,7 +319,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
      * @dev Check if a proposal denial has the minimum requirements
      */
     modifier checkDenial(uint256 _tokenId, address _reviewer) {
-        Address.checkCaller(_reviewer);
+        AddressUtils.checkCaller(_reviewer);
         _checkRole(REVIEWER_ROLE);
         _checkExistingToken(_tokenId);
         _;

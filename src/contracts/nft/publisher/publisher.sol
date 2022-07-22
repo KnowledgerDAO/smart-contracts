@@ -2,7 +2,7 @@
 pragma solidity ^0.8.14;
 
 import {IPublisher} from "./publisher.interface.sol";
-import {Address} from "../../utils/address.sol";
+import {AddressUtils} from "../../utils/address.sol";
 
 contract Publisher is IPublisher {
     mapping(address => uint256) private publishers;
@@ -69,7 +69,7 @@ contract Publisher is IPublisher {
             publisherAddresses[publishers[_publisher]] == _publisher,
             "Publisher already exists"
         );
-        Address.checkCaller(_publisher);
+        AddressUtils.checkCaller(_publisher);
     }
 
     /**
@@ -84,7 +84,7 @@ contract Publisher is IPublisher {
      * @dev Check if an address is the caller of the transaction
      */
     modifier checkCaller(address _caller) {
-        Address.checkCaller(_caller);
+        AddressUtils.checkCaller(_caller);
         _;
     }
 }
