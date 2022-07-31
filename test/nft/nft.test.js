@@ -5,6 +5,7 @@ const PublisherContract = artifacts.require("Publisher");
 const ReviewerContract = artifacts.require("Reviewer");
 const ContentContract = artifacts.require("Content");
 const KnowledgerNFT = artifacts.require("KnowledgerNFT");
+const KnowledgerToken = artifacts.require("Knowledger");
 
 require("chai")
     .use(require("chai-as-promised"))
@@ -15,7 +16,7 @@ require("chai")
  * Ethereum client
  * See docs: https://www.trufflesuite.com/docs/truffle/testing/writing-tests-in-javascript
  */
-contract("KnowledgerNFT", function ([owner]) {
+contract("KnowledgerNFT", function ([owner, publisher, reviewer1, reviewer2, reviewer3, buyer]) {
 
     let ownerContract;
     let buyerContract;
@@ -23,6 +24,7 @@ contract("KnowledgerNFT", function ([owner]) {
     let reviewerContract;
     let contentContract;
     let knowledgerNFT;
+    let knowledgerToken;
 
     before(async () => {
         ownerContract = await OwnerContract.deployed();
@@ -30,6 +32,7 @@ contract("KnowledgerNFT", function ([owner]) {
         publisherContract = await PublisherContract.deployed();
         reviewerContract = await ReviewerContract.deployed();
         contentContract = await ContentContract.deployed();
+        knowledgerToken = await KnowledgerToken.deployed();
         knowledgerNFT = await KnowledgerNFT.deployed();
     });
 
@@ -41,6 +44,22 @@ contract("KnowledgerNFT", function ([owner]) {
             expect(reviewerContract).to.not.eq(null);
             expect(contentContract).to.not.eq(null);
             expect(knowledgerNFT).to.not.eq(null);
+        });
+    });
+
+    describe(".proposeContent", () => {
+        before(async () => {
+            await knowledgerNFT.allowPublisher(publisher, { from: publisher });
+            await knowledgerNFT.allowReviewer(reviewer1, { from: reviewer1 });
+            await knowledgerNFT.allowReviewer(reviewer2, { from: reviewer2 });
+            await knowledgerNFT.allowReviewer(reviewer3, { from: reviewer3 });
+            await knowledgerNFT.allowBuyer(buyer, { from: buyer });
+        });
+
+        it("should propose a content with success", async () => {
+            const event = await knowledgerNFT.proposeContent(publisher, "about:blank", knowledgerToken.address, 10, 2, 1, { from: publisher });
+            console.log(event);
+            expect(true).to.eq(false);
         });
     });
 

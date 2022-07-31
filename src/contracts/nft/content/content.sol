@@ -59,11 +59,11 @@ contract Content is IContent {
         uint256 _idx1 = 0;
         uint256 _idx2 = 0;
         uint256 _idx3 = 0;
-        while (_idx1 == _idx2 || _idx1 == _idx3 || _idx2 == _idx3) {
+        // while (_idx1 == _idx2 || _idx1 == _idx3 || _idx2 == _idx3) {
             _idx1 = Number.random(randomNonce++, contentIndex);
             _idx2 = Number.random(randomNonce++, contentIndex);
             _idx3 = Number.random(randomNonce++, contentIndex);
-        }
+        // }
 
         address _reviewer1 = reviewer.getReviewerAddresses()[_idx1];
         address _reviewer2 = reviewer.getReviewerAddresses()[_idx2];
@@ -217,8 +217,8 @@ contract Content is IContent {
      */
     modifier checkProposal(
         uint256 _price,
-        uint256 _prizePercentage,
-        uint256 _networkPercentage
+        uint _prizePercentage,
+        uint _networkPercentage
     ) {
         require(_price > 0, "The price must be greater than 0");
         require(
@@ -227,7 +227,7 @@ contract Content is IContent {
         );
         require(_networkPercentage >= 0, "The price must not be negative");
         require(
-            _prizePercentage + _networkPercentage > 10,
+            (_prizePercentage + _networkPercentage) <= 10,
             "Sum of percentages can not be greater than 10"
         );
         _;

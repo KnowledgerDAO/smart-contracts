@@ -48,7 +48,10 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
     /**
      * @dev See {IKnowledgerNFT-allowPublisher}.
      */
-    function allowPublisher(address _publisher) external {
+    function allowPublisher(address _publisher)
+        external
+        checkCaller(_publisher)
+    {
         publisher.allowPublisher(_publisher);
         _grantRole(PUBLISHER_ROLE, msg.sender);
     }
@@ -56,7 +59,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
     /**
      * @dev See {IKnowledgerNFT-allowReviewer}.
      */
-    function allowReviewer(address _reviewer) external {
+    function allowReviewer(address _reviewer) external checkCaller(_reviewer) {
         reviewer.allowReviewer(_reviewer);
         _grantRole(REVIEWER_ROLE, msg.sender);
     }
@@ -64,7 +67,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
     /**
      * @dev See {IKnowledgerNFT-allowBuyer}.
      */
-    function allowBuyer(address _buyer) external {
+    function allowBuyer(address _buyer) external checkCaller(_buyer) {
         buyer.allowBuyer(_buyer);
         _grantRole(BUYER_ROLE, msg.sender);
     }
@@ -188,6 +191,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
     function buyContent(uint256 _tokenId, address payable _buyer)
         external
         payable
+        checkCaller(_buyer)
         checkPurchase(_tokenId)
         returns (bool)
     {

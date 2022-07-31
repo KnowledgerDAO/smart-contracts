@@ -2,7 +2,6 @@
 pragma solidity ^0.8.14;
 
 import {IPublisher} from "./publisher.interface.sol";
-import {AddressUtils} from "../../utils/address.sol";
 
 contract Publisher is IPublisher {
     mapping(address => uint256) private publishers;
@@ -27,10 +26,7 @@ contract Publisher is IPublisher {
     /**
      * @dev See {IPublisher-disallowPublisher}.
      */
-    function disallowPublisher(address _publisher)
-        external
-        checkCaller(_publisher)
-    {
+    function disallowPublisher(address _publisher) external {
         delete publisherAddresses[publishers[_publisher]];
         delete publishers[_publisher];
     }
@@ -65,11 +61,13 @@ contract Publisher is IPublisher {
      * @dev Check if a publisher already exists
      */
     function checkExistingPublisher(address _publisher) private view {
-        require(
-            publisherAddresses[publishers[_publisher]] == _publisher,
-            "Publisher already exists"
-        );
-        AddressUtils.checkCaller(_publisher);
+        uint256 _index = publishers[_publisher];
+        if (_index >= 0 && publisherAddresses.length > 0) {
+            require(
+                publisherAddresses[_index] == _publisher,
+                "Publisher already exists"
+            );
+        }
     }
 
     /**
@@ -77,14 +75,6 @@ contract Publisher is IPublisher {
      */
     modifier _checkExistingPublisher(address _publisher) {
         checkExistingPublisher(_publisher);
-        _;
-    }
-
-    /**
-     * @dev Check if an address is the caller of the transaction
-     */
-    modifier checkCaller(address _caller) {
-        AddressUtils.checkCaller(_caller);
         _;
     }
 }
