@@ -60,7 +60,6 @@ contract("KnowledgerNFT", function ([owner, publisher, reviewer1, reviewer2, rev
 
         it("should propose a content with success", async () => {
             const event = await knowledgerNFT.proposeContent(publisher, "about:blank", knowledgerToken.address, 10, 2, 1, { from: publisher });
-            console.log(event);
             const contentProposedEvent = event.logs.find(log => log.event === CONTENT_PROPOSED_EVENT_NAME).args;
             expect(contentProposedEvent.tokenId.toNumber()).to.eq(0);
             expect(contentProposedEvent.contentURI).to.eq("about:blank");

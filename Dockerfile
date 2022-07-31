@@ -26,7 +26,7 @@ COPY ./src/contracts /home/app/contracts
 COPY ./migrations /home/app/migrations/
 COPY ./test /home/app/test/
 
-CMD ["yarn", "test"]
+CMD ["yarn", "test:stacktrace"]
 
 # GANACHE IMAGE
 FROM base as ganache
