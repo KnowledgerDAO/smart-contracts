@@ -62,8 +62,6 @@ interface IKnowledgerNFT {
      * @param _price Price of the content
      * @param _prizePercentage The percentage that the publisher is willingness to pay as a bounty to the reviewers
      * @param _networkPercentage The percentage to be paid to the network owners to invest in the platform
-     *
-     * @return {Content} Returns the struct called Content with its data
      */
     function proposeContent(
         address payable _publisher,
@@ -72,7 +70,7 @@ interface IKnowledgerNFT {
         uint256 _price,
         uint256 _prizePercentage,
         uint256 _networkPercentage
-    ) external returns (Content memory);
+    ) external;
 
     /**
      * @dev This method makes possible a reviewer approve some content.

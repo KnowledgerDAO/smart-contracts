@@ -5,9 +5,10 @@ import {IBuyer} from "./buyer.interface.sol";
 import {Content} from "../content/content.struct.sol";
 import {ContentStatus} from "../content/content.enum.sol";
 import {IOwner} from "../owner/owner.interface.sol";
+import {BuyerValue} from "./buyer.struct.sol";
 
 contract Buyer is IBuyer {
-    mapping(address => uint256) private buyers;
+    mapping(address => BuyerValue) private buyers;
     address[] private buyerAddresses;
     mapping(address => uint256[]) buyerTokens;
 
@@ -23,14 +24,16 @@ contract Buyer is IBuyer {
      */
     function allowBuyer(address _buyer) external _checkExistingBuyer(_buyer) {
         buyerAddresses.push(_buyer);
-        buyers[_buyer] = buyerAddresses.length - 1;
+        buyers[_buyer].index = buyerAddresses.length - 1;
+        buyers[_buyer].exists = true;
     }
 
     /**
      * @dev See {IBuyer-disallowBuyer}.
      */
     function disallowBuyer(address _buyer) external checkCaller(_buyer) {
-        delete buyerAddresses[buyers[_buyer]];
+        delete buyerAddresses[buyers[_buyer].index];
+        buyers[_buyer].exists = false;
         delete buyers[_buyer];
     }
 
@@ -148,10 +151,13 @@ contract Buyer is IBuyer {
      * @dev Check if a buyer already exists
      */
     function checkExistingBuyer(address _buyer) private view {
-        require(
-            buyerAddresses[buyers[_buyer]] == _buyer,
-            "Buyer already exists"
-        );
+        bool exists = buyers[_buyer].exists;
+        if (exists && buyerAddresses.length > 0) {
+            require(
+                buyerAddresses[buyers[_buyer].index] == _buyer,
+                "Buyer already exists"
+            );
+        }
     }
 
     /**

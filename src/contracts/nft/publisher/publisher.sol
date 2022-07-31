@@ -2,9 +2,10 @@
 pragma solidity ^0.8.14;
 
 import {IPublisher} from "./publisher.interface.sol";
+import {PublisherValue} from "./publisher.struct.sol";
 
 contract Publisher is IPublisher {
-    mapping(address => uint256) private publishers;
+    mapping(address => PublisherValue) private publishers;
     address[] private publisherAddresses;
     mapping(address => uint256[]) publisherTokens;
 
@@ -20,14 +21,16 @@ contract Publisher is IPublisher {
         _checkExistingPublisher(_publisher)
     {
         publisherAddresses.push(_publisher);
-        publishers[_publisher] = publisherAddresses.length - 1;
+        publishers[_publisher].index = publisherAddresses.length - 1;
+        publishers[_publisher].exists = true;
     }
 
     /**
      * @dev See {IPublisher-disallowPublisher}.
      */
     function disallowPublisher(address _publisher) external {
-        delete publisherAddresses[publishers[_publisher]];
+        delete publisherAddresses[publishers[_publisher].index];
+        publishers[_publisher].exists = false;
         delete publishers[_publisher];
     }
 
@@ -61,10 +64,10 @@ contract Publisher is IPublisher {
      * @dev Check if a publisher already exists
      */
     function checkExistingPublisher(address _publisher) private view {
-        uint256 _index = publishers[_publisher];
-        if (_index >= 0 && publisherAddresses.length > 0) {
+        bool exists = publishers[_publisher].exists;
+        if (exists && publisherAddresses.length > 0) {
             require(
-                publisherAddresses[_index] == _publisher,
+                publisherAddresses[publishers[_publisher].index] == _publisher,
                 "Publisher already exists"
             );
         }

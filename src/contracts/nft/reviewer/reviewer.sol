@@ -3,9 +3,10 @@ pragma solidity ^0.8.14;
 
 import {IReviewer} from "./reviewer.interface.sol";
 import {Content} from "../content/content.struct.sol";
+import {ReviewerValue} from "./reviewer.struct.sol";
 
 contract Reviewer is IReviewer {
-    mapping(address => uint256) reviewers;
+    mapping(address => ReviewerValue) reviewers;
     address[] private reviewerAddresses;
     mapping(address => uint256[]) reviewerTokens;
 
@@ -21,7 +22,8 @@ contract Reviewer is IReviewer {
         _checkExistingReviewer(_reviewer)
     {
         reviewerAddresses.push(_reviewer);
-        reviewers[_reviewer] = reviewerAddresses.length - 1;
+        reviewers[_reviewer].index = reviewerAddresses.length - 1;
+        reviewers[_reviewer].exists = true;
     }
 
     /**
@@ -31,7 +33,8 @@ contract Reviewer is IReviewer {
         external
         checkCaller(_reviewer)
     {
-        delete reviewerAddresses[reviewers[_reviewer]];
+        delete reviewerAddresses[reviewers[_reviewer].index];
+        reviewers[_reviewer].exists = false;
         delete reviewers[_reviewer];
     }
 
@@ -72,10 +75,13 @@ contract Reviewer is IReviewer {
      * @dev Check if a reviewer already exists
      */
     function checkExistingReviewer(address _reviewer) private view {
-        require(
-            reviewerAddresses[reviewers[_reviewer]] == _reviewer,
-            "Reviewer already exists"
-        );
+        bool _exists = reviewers[_reviewer].exists;
+        if (_exists && reviewerAddresses.length > 0) {
+            require(
+                reviewerAddresses[reviewers[_reviewer].index] == _reviewer,
+                "Reviewer already exists"
+            );
+        }
     }
 
     /**

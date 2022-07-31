@@ -18,6 +18,7 @@ import {Buyer as BuyerContract} from "./buyer/buyer.sol";
 import {Reviewer as ReviewerContract} from "./reviewer/reviewer.sol";
 import {Content as ContentContract} from "./content/content.sol";
 import {Publisher as PublisherContract} from "./publisher/publisher.sol";
+import {ContentEvents} from "./content/content.event.sol";
 
 /**
  * @title KnowledgerNFT controls and provides the specific transactions that ara available to be used by this contract.
@@ -115,7 +116,6 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
     )
         external
         checkProposal(_price, _prizePercentage, _networkPercentage)
-        returns (Content memory)
     {
         uint256 _index = content.proposeContent(
             _publisher,
@@ -127,8 +127,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
         );
         _safeMint(_publisher, _index);
 
-        // TODO: Emit some event
-        return content.getContent(_index);
+        emit ContentEvents.ContentProposed(content.getContent(_index).tokenId, content.getContent(_index).contentURI);
     }
 
     /**
