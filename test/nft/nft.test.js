@@ -86,4 +86,18 @@ contract("KnowledgerNFT", function ([owner, publisher, reviewer1, reviewer2, rev
         });
     });
 
+    describe(".getContent", () => {
+        it("should retrieve a content created successfully", async () => {
+            const [tokenId, contentURI]  = await knowledgerNFT.getContent.call(0);
+
+            expect(Number(tokenId)).to.eq(0);
+            expect(contentURI).to.eq("about:blank");
+        });
+
+        it("shouldn't retrieve a content with unexisting ID", async () => {
+            await knowledgerNFT.getContent.call(1)
+                .should.be.rejectedWith(/URI query for nonexistent token/);
+        });
+    }); 
+
 });
