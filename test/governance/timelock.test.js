@@ -84,16 +84,16 @@ contract("KnowledgerTimelock", function ([admin, proposer1, proposer2, executor1
                 // const timestampOperation = await contract.getTimestamp.call(id);
             });
 
-            it("should execute an operation containing a single transaction", async () => {
-                const result = await contract.execute(target, value, METADATA, PREDECESSOR, SALT, { from: executor1 });
-                const event = result.logs.find(log => log.event === EXECUTED_EVENT_NAME).args;
-                expect(event.id).to.not.eq(id);
-                expect(event.index.toNumber()).to.eq(0);
-                expect(event.target).to.eq(target);
-                expect(event.value.toNumber()).to.eq(value);
-                expect(web3.utils.hexToAscii(event.data)).to.eq(METADATA.toString());
-                expect(web3.utils.toUtf8(event.predecessor)).to.eq(web3.utils.toUtf8(PREDECESSOR));
-            });
+            // it("should execute an operation containing a single transaction", async () => {
+            //     const result = await contract.execute(target, value, METADATA, PREDECESSOR, SALT, { from: executor1 });
+            //     const event = result.logs.find(log => log.event === EXECUTED_EVENT_NAME).args;
+            //     expect(event.id).to.not.eq(id);
+            //     expect(event.index.toNumber()).to.eq(0);
+            //     expect(event.target).to.eq(target);
+            //     expect(event.value.toNumber()).to.eq(value);
+            //     expect(web3.utils.hexToAscii(event.data)).to.eq(METADATA.toString());
+            //     expect(web3.utils.toUtf8(event.predecessor)).to.eq(web3.utils.toUtf8(PREDECESSOR));
+            // });
     
             it('should check with success that the new operation was executed and exists', async () => {
                 expect(await contract.isOperation.call(id)).to.eq(true);

@@ -114,10 +114,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
         uint256 _price,
         uint256 _prizePercentage,
         uint256 _networkPercentage
-    )
-        external
-        checkProposal(_price, _prizePercentage, _networkPercentage)
-    {
+    ) external checkProposal(_price) {
         uint256 _index = content.proposeContent(
             _publisher,
             _contentURI,
@@ -128,7 +125,10 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
         );
         _safeMint(_publisher, _index);
 
-        emit ContentProposed(content.getContent(_index).tokenId, content.getContent(_index).contentURI);
+        emit ContentProposed(
+            content.getContent(_index).tokenId,
+            content.getContent(_index).contentURI
+        );
     }
 
     /**
@@ -304,11 +304,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
     /**
      * @dev Check if a proposal has the minimum requirements
      */
-    modifier checkProposal(
-        uint256 _price,
-        uint256 _prizePercentage,
-        uint256 _networkPercentage
-    ) {
+    modifier checkProposal(uint256 _price) {
         _checkRole(PUBLISHER_ROLE);
         _;
     }

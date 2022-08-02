@@ -64,6 +64,26 @@ contract("KnowledgerNFT", function ([owner, publisher, reviewer1, reviewer2, rev
             expect(contentProposedEvent.tokenId.toNumber()).to.eq(0);
             expect(contentProposedEvent.contentURI).to.eq("about:blank");
         });
+
+        it("shouldn't propose a content because the caller is not a publisher", async () => {
+            await knowledgerNFT.proposeContent(reviewer1, "about:blank", knowledgerToken.address, 10, 2, 1, { from: reviewer1 })
+                .should.be.rejectedWith(/is missing role/);
+        });
+
+        it("shouldn't propose a content because the value is 0", async () => {
+            await knowledgerNFT.proposeContent(publisher, "about:blank", knowledgerToken.address, 0, 2, 1, { from: publisher })
+                .should.be.rejectedWith(/The price must be greater than 0/);
+        });
+
+        it("shouldn't propose a content because prize percentage must be greater than 1", async () => {
+            await knowledgerNFT.proposeContent(publisher, "about:blank", knowledgerToken.address, 10, 1, 1, { from: publisher })
+                .should.be.rejectedWith(/The prize percentage must be greater than 1/);
+        });
+
+        it("shouldn't propose a content because sum of percentages must be less than 10", async () => {
+            await knowledgerNFT.proposeContent(publisher, "about:blank", knowledgerToken.address, 10, 5, 6, { from: publisher })
+                .should.be.rejectedWith(/Sum of percentages can not be greater than 10/);
+        });
     });
 
 });
