@@ -16,7 +16,7 @@ struct Content {
     /**
      * @dev Address of the creator's content.
      */
-    address payable publisher;
+    address publisher;
     /**
      * @dev Address of the contract that the publisher wants to be paid and charge the buyers.
      */
@@ -113,4 +113,31 @@ struct Purchase {
      * @dev Date when the content was purchased
      */
     uint256 purchasedAt;
+}
+
+struct ProposeContentRequest {
+    /**
+     * Address of the creator of the content
+     */
+    address publisher;
+    /**
+     * URI with the information stored to create the NFT and associate it with the tokenId
+     */
+    string contentURI;
+    /**
+     * Contract address regarding the token type that the publisher wants to charge a buyer
+     */
+    ERC20 tokenType;
+    /**
+     * Price of the content
+     */
+    uint256 price;
+    /**
+     * The percentage that the publisher is willingness to pay as a bounty to the reviewers
+     */
+    uint256 prizePercentage;
+    /**
+     * The percentage to be paid to the network owners to invest in the platform
+     */
+    uint256 networkPercentage;
 }

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.14;
 
 struct PublisherValue {
-    uint256 index;
+    address publisher;
+    uint256[] tokenIds;
     bool exists;
 }

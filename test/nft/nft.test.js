@@ -16,7 +16,7 @@ require("chai")
  * Ethereum client
  * See docs: https://www.trufflesuite.com/docs/truffle/testing/writing-tests-in-javascript
  */
-contract("KnowledgerNFT", function ([owner, publisher, reviewer1, reviewer2, reviewer3, buyer]) {
+contract("KnowledgerNFT", function ([owner, publisher, reviewer1, reviewer2, reviewer3, buyer, publisher2]) {
 
     const CONTENT_PROPOSED_EVENT_NAME = 'ContentProposed';
 
@@ -61,6 +61,7 @@ contract("KnowledgerNFT", function ([owner, publisher, reviewer1, reviewer2, rev
         it("should propose a content with success", async () => {
             const event = await knowledgerNFT.proposeContent(publisher, "about:blank", knowledgerToken.address, 10, 2, 1, { from: publisher });
             const contentProposedEvent = event.logs.find(log => log.event === CONTENT_PROPOSED_EVENT_NAME).args;
+            expect(contentProposedEvent.publisher).to.eq(publisher);
             expect(contentProposedEvent.tokenId.toNumber()).to.eq(0);
             expect(contentProposedEvent.contentURI).to.eq("about:blank");
         });
@@ -98,6 +99,39 @@ contract("KnowledgerNFT", function ([owner, publisher, reviewer1, reviewer2, rev
             await knowledgerNFT.getContent.call(1)
                 .should.be.rejectedWith(/URI query for nonexistent token/);
         });
-    }); 
+    });
+
+    describe(".getContent", () => {
+        it("should retrieve a content created successfully", async () => {
+            const [tokenId, contentURI]  = await knowledgerNFT.getContent.call(0);
+
+            expect(Number(tokenId)).to.eq(0);
+            expect(contentURI).to.eq("about:blank");
+        });
+
+        it("shouldn't retrieve a content with unexisting ID", async () => {
+            await knowledgerNFT.getContent.call(1)
+                .should.be.rejectedWith(/URI query for nonexistent token/);
+        });
+    });
+
+    describe(".getPublisherContents", () => {
+        it("should retrieve the list of contents assigned successfully", async () => {
+            const [result]  = await knowledgerNFT.getPublisherContents.call(publisher, { from: publisher });
+            console.log(result);
+            
+            const response  = await contentContract.getContent.call(0, { from: publisher });
+            console.log(response);
+
+            const [tokenId, contentURI] = result;
+            expect(Number(tokenId)).to.eq(0);
+            expect(contentURI).to.eq("about:blank");
+        });
+
+        it("shouldn't retrieve the list of contents for unexisting publisher", async () => {
+            await knowledgerNFT.getPublisherContents.call(publisher2, { from: publisher2 })
+                .should.be.rejectedWith(/This publisher doesn't have any content assigned/);
+        });
+    });
 
 });

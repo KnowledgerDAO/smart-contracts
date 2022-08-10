@@ -3,15 +3,12 @@ pragma solidity ^0.8.14;
 
 import {IPublisher} from "./publisher.interface.sol";
 import {PublisherValue} from "./publisher.struct.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Publisher is IPublisher {
-    mapping(address => PublisherValue) private publishers;
-    address[] private publisherAddresses;
-    mapping(address => uint256[]) publisherTokens;
+    mapping(address => PublisherValue) public publishers;
 
-    constructor() {
-        publisherAddresses = new address[](0);
-    }
+    constructor() {}
 
     /**
      * @dev See {IPublisher-allowPublisher}.
@@ -20,8 +17,7 @@ contract Publisher is IPublisher {
         external
         _checkExistingPublisher(_publisher)
     {
-        publisherAddresses.push(_publisher);
-        publishers[_publisher].index = publisherAddresses.length - 1;
+        publishers[_publisher].publisher = _publisher;
         publishers[_publisher].exists = true;
     }
 
@@ -29,7 +25,6 @@ contract Publisher is IPublisher {
      * @dev See {IPublisher-disallowPublisher}.
      */
     function disallowPublisher(address _publisher) external {
-        delete publisherAddresses[publishers[_publisher].index];
         publishers[_publisher].exists = false;
         delete publishers[_publisher];
     }
@@ -40,24 +35,39 @@ contract Publisher is IPublisher {
     function getTokens(address _publisher)
         external
         view
-        _checkExistingPublisher(_publisher)
         returns (uint256[] memory)
     {
+        bool exists = publishers[_publisher].exists;
         require(
-            publisherTokens[_publisher].length > 0,
-            "This publisher doesn't have any content assigned"
+            exists,
+            string.concat(
+                "This publisher doesn't have any content assigned to the address ",
+                Strings.toHexString(uint160(_publisher), 20)
+            )
         );
-        return publisherTokens[_publisher];
+
+        return publishers[_publisher].tokenIds;
     }
 
     /**
      * @dev See {IPublisher-assignTokenId}.
      */
-    function assignTokenId(address _publisher, uint256 _tokenId)
-        external
-        _checkExistingPublisher(_publisher)
-    {
-        publisherTokens[_publisher].push(_tokenId);
+    function assignTokenId(address _publisher, uint256 _tokenId) external {
+        bool exists = publishers[_publisher].exists;
+        require(
+            exists,
+            string.concat(
+                "This publisher doesn't exist with the address ",
+                Strings.toHexString(uint160(_publisher), 20)
+            )
+        );
+
+        publishers[_publisher].tokenIds.push(_tokenId);
+
+        require(
+            publishers[_publisher].tokenIds.length > 0,
+            "Token assignment was not stored."
+        );
     }
 
     /**
@@ -65,11 +75,8 @@ contract Publisher is IPublisher {
      */
     function checkExistingPublisher(address _publisher) private view {
         bool exists = publishers[_publisher].exists;
-        if (exists && publisherAddresses.length > 0) {
-            require(
-                publisherAddresses[publishers[_publisher].index] == _publisher,
-                "Publisher already exists"
-            );
+        if (exists) {
+            require(!exists, "Publisher already exists");
         }
     }
 

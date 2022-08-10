@@ -2,29 +2,19 @@
 pragma solidity ^0.8.14;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Assessment, Content as ContentStruct, Purchase} from "./content.struct.sol";
+import {Assessment, Content as ContentStruct, ProposeContentRequest, Purchase} from "./content.struct.sol";
 
 interface IContent {
     /**
      * @dev This method makes possible to create a content before publishing.
      *
-     * @param _publisher Address of the creator of the content
-     * @param _contentURI URI with the information stored to create the NFT and associate it with the tokenId
-     * @param _tokenType Contract address regarding the token type that the publisher wants to charge a buyer
-     * @param _price Price of the content
-     * @param _prizePercentage The percentage that the publisher is willingness to pay as a bounty to the reviewers
-     * @param _networkPercentage The percentage to be paid to the network owners to invest in the platform
+     * @param _request Request data
      *
      * @return {uint256} Returns the index of the struct added.
      */
-    function proposeContent(
-        address payable _publisher,
-        string memory _contentURI,
-        ERC20 _tokenType,
-        uint256 _price,
-        uint256 _prizePercentage,
-        uint256 _networkPercentage
-    ) external returns (uint256);
+    function proposeContent(ProposeContentRequest memory _request)
+        external
+        returns (uint256);
 
     /**
      * @dev This method makes possible a reviewer approve some content.

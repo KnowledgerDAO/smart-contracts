@@ -64,7 +64,7 @@ interface IKnowledgerNFT {
      * @param _networkPercentage The percentage to be paid to the network owners to invest in the platform
      */
     function proposeContent(
-        address payable _publisher,
+        address _publisher,
         string memory _contentURI,
         ERC20 _tokenType,
         uint256 _price,
@@ -153,7 +153,10 @@ interface IKnowledgerNFT {
      *
      * @return {Content[]} Returns the contents, otherwise throws.
      */
-    function getPublisherContents() external view returns (Content[] memory);
+    function getPublisherContents(address _publisher)
+        external
+        view
+        returns (Content[] memory);
 
     /**
      * @dev This method makes possible return the contents related to a buyer.

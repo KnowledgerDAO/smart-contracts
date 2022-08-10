@@ -2,9 +2,10 @@
 pragma solidity ^0.8.14;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import {AbstractKnowledgerNFT} from "./nft.abstract.sol";
 import {IKnowledgerNFT} from "./nft.interface.sol";
-import {Assessment, Content, Purchase} from "./content/content.struct.sol";
+import {Assessment, Content, ProposeContentRequest, Purchase} from "./content/content.struct.sol";
 import {AssessmentApproved, AssessmentDenied} from "./content/content.constants.sol";
 import {Number} from "../utils/number.sol";
 import {AddressUtils} from "../utils/address.sol";
@@ -31,7 +32,11 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
     IBuyer private buyer;
     IContent private content;
 
-    event ContentProposed(uint256 tokenId, string contentURI);
+    event ContentProposed(
+        address publisher,
+        uint256 tokenId,
+        string contentURI
+    );
 
     constructor(
         IOwner _owner,
@@ -55,7 +60,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
         checkCaller(_publisher)
     {
         publisher.allowPublisher(_publisher);
-        _grantRole(PUBLISHER_ROLE, msg.sender);
+        _grantRole(PUBLISHER_ROLE, _publisher);
     }
 
     /**
@@ -63,7 +68,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
      */
     function allowReviewer(address _reviewer) external checkCaller(_reviewer) {
         reviewer.allowReviewer(_reviewer);
-        _grantRole(REVIEWER_ROLE, msg.sender);
+        _grantRole(REVIEWER_ROLE, _reviewer);
     }
 
     /**
@@ -71,7 +76,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
      */
     function allowBuyer(address _buyer) external checkCaller(_buyer) {
         buyer.allowBuyer(_buyer);
-        _grantRole(BUYER_ROLE, msg.sender);
+        _grantRole(BUYER_ROLE, _buyer);
     }
 
     /**
@@ -82,7 +87,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
         checkCaller(_publisher)
     {
         publisher.disallowPublisher(_publisher);
-        _revokeRole(PUBLISHER_ROLE, msg.sender);
+        _revokeRole(PUBLISHER_ROLE, _publisher);
     }
 
     /**
@@ -93,7 +98,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
         checkCaller(_reviewer)
     {
         reviewer.disallowReviewer(_reviewer);
-        _revokeRole(REVIEWER_ROLE, msg.sender);
+        _revokeRole(REVIEWER_ROLE, _reviewer);
     }
 
     /**
@@ -101,14 +106,14 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
      */
     function disallowBuyer(address _buyer) external checkCaller(_buyer) {
         buyer.disallowBuyer(_buyer);
-        _revokeRole(BUYER_ROLE, msg.sender);
+        _revokeRole(BUYER_ROLE, _buyer);
     }
 
     /**
      * @dev See {IKnowledgerNFT-proposeContent}.
      */
     function proposeContent(
-        address payable _publisher,
+        address _publisher,
         string memory _contentURI,
         ERC20 _tokenType,
         uint256 _price,
@@ -116,16 +121,19 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
         uint256 _networkPercentage
     ) external checkProposal(_price) {
         uint256 _index = content.proposeContent(
-            _publisher,
-            _contentURI,
-            _tokenType,
-            _price,
-            _prizePercentage,
-            _networkPercentage
+            ProposeContentRequest(
+                _publisher,
+                _contentURI,
+                _tokenType,
+                _price,
+                _prizePercentage,
+                _networkPercentage
+            )
         );
         _safeMint(_publisher, _index);
 
         emit ContentProposed(
+            content.getContent(_index).publisher,
             content.getContent(_index).tokenId,
             content.getContent(_index).contentURI
         );
@@ -218,12 +226,26 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
     /**
      * @dev See {IKnowledgerNFT-getPublisherContents}.
      */
-    function getPublisherContents() external view returns (Content[] memory) {
-        uint256[] memory _tokenIds = publisher.getTokens(msg.sender);
-        Content[] memory _contents = new Content[](0);
+    function getPublisherContents(address _publisher)
+        external
+        view
+        returns (Content[] memory)
+    {
+        uint256[] memory _tokenIds = publisher.getTokens(_publisher);
+        Content[] memory _contents = new Content[](_tokenIds.length);
         uint256 _count = 0;
         for (uint256 i; i < _tokenIds.length; i++) {
-            _contents[_count] = content.getContent(_tokenIds[i]);
+            Content memory _content = content.getContent(_tokenIds[i]);
+            require(
+                address(_content.publisher) == _publisher,
+                string.concat(
+                    "This content doesn't have any address assigned with ",
+                    Strings.toHexString(uint160(_content.publisher), 20),
+                    " != ",
+                    Strings.toHexString(uint160(_publisher), 20)
+                )
+            );
+            _contents[_count] = _content;
             _count++;
         }
         return _contents;

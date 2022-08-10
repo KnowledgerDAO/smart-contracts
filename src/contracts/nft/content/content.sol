@@ -7,7 +7,7 @@ import {AddressUtils} from "../../utils/address.sol";
 import {Number} from "../../utils/number.sol";
 import {IReviewer} from "../reviewer/reviewer.interface.sol";
 import {IPublisher} from "../publisher/publisher.interface.sol";
-import {Assessment, Content as ContentStruct, Purchase} from "./content.struct.sol";
+import {Assessment, Content as ContentStruct, ProposeContentRequest, Purchase} from "./content.struct.sol";
 import {AssessmentApproved, AssessmentDenied} from "./content.constants.sol";
 import {ContentStatus} from "./content.enum.sol";
 
@@ -26,26 +26,23 @@ contract Content is IContent {
     /**
      * @dev See {IContent-proposeContent}.
      */
-    function proposeContent(
-        address payable _publisher,
-        string memory _contentURI,
-        ERC20 _tokenType,
-        uint256 _price,
-        uint256 _prizePercentage,
-        uint256 _networkPercentage
-    )
+    function proposeContent(ProposeContentRequest memory _request)
         external
-        checkProposal(_price, _prizePercentage, _networkPercentage)
+        checkProposal(
+            _request.price,
+            _request.prizePercentage,
+            _request.networkPercentage
+        )
         returns (uint256)
     {
         contents[contentIndex].tokenId = contentIndex;
-        contents[contentIndex].contentURI = _contentURI;
-        contents[contentIndex].publisher = _publisher;
-        contents[contentIndex].tokenType = _tokenType;
-        contents[contentIndex].price = _price;
+        contents[contentIndex].contentURI = _request.contentURI;
+        contents[contentIndex].publisher = _request.publisher;
+        contents[contentIndex].tokenType = _request.tokenType;
+        contents[contentIndex].price = _request.price;
         contents[contentIndex].status = ContentStatus.PROPOSED;
-        contents[contentIndex].prizePercentage = _prizePercentage;
-        contents[contentIndex].networkPercentage = _networkPercentage;
+        contents[contentIndex].prizePercentage = _request.prizePercentage;
+        contents[contentIndex].networkPercentage = _request.networkPercentage;
         contents[contentIndex].quorumAmount = 2;
         contents[contentIndex].approvalAmount = 0;
         contents[contentIndex].denialAmount = 0;
@@ -60,9 +57,9 @@ contract Content is IContent {
         uint256 _idx2 = 0;
         uint256 _idx3 = 0;
         // while (_idx1 == _idx2 || _idx1 == _idx3 || _idx2 == _idx3) {
-            _idx1 = Number.random(randomNonce++, contentIndex);
-            _idx2 = Number.random(randomNonce++, contentIndex);
-            _idx3 = Number.random(randomNonce++, contentIndex);
+        _idx1 = Number.random(randomNonce++, contentIndex);
+        _idx2 = Number.random(randomNonce++, contentIndex);
+        _idx3 = Number.random(randomNonce++, contentIndex);
         // }
 
         address _reviewer1 = reviewer.getReviewerAddresses()[_idx1];
@@ -71,13 +68,11 @@ contract Content is IContent {
 
         contents[contentIndex].reviewers = [_reviewer1, _reviewer2, _reviewer3];
 
-        reviewer.assignTokenId(_reviewer1, contents[contentIndex].tokenId);
-        reviewer.assignTokenId(_reviewer2, contents[contentIndex].tokenId);
-        reviewer.assignTokenId(_reviewer3, contents[contentIndex].tokenId);
-        publisher.assignTokenId(
-            contents[contentIndex].publisher,
-            contents[contentIndex].tokenId
-        );
+        reviewer.assignTokenId(_reviewer1, contentIndex);
+        reviewer.assignTokenId(_reviewer2, contentIndex);
+        reviewer.assignTokenId(_reviewer3, contentIndex);
+
+        publisher.assignTokenId(address(_request.publisher), contentIndex);
 
         return _indexContentCreated;
     }
@@ -217,8 +212,8 @@ contract Content is IContent {
      */
     modifier checkProposal(
         uint256 _price,
-        uint _prizePercentage,
-        uint _networkPercentage
+        uint256 _prizePercentage,
+        uint256 _networkPercentage
     ) {
         require(_price > 0, "The price must be greater than 0");
         require(
