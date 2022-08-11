@@ -68,11 +68,14 @@ contract Content is IContent {
 
         contents[contentIndex].reviewers = [_reviewer1, _reviewer2, _reviewer3];
 
-        reviewer.assignTokenId(_reviewer1, contentIndex);
-        reviewer.assignTokenId(_reviewer2, contentIndex);
-        reviewer.assignTokenId(_reviewer3, contentIndex);
+        reviewer.assignTokenId(_reviewer1, _indexContentCreated);
+        reviewer.assignTokenId(_reviewer2, _indexContentCreated);
+        reviewer.assignTokenId(_reviewer3, _indexContentCreated);
 
-        publisher.assignTokenId(address(_request.publisher), contentIndex);
+        publisher.assignTokenId(
+            address(_request.publisher),
+            _indexContentCreated
+        );
 
         return _indexContentCreated;
     }

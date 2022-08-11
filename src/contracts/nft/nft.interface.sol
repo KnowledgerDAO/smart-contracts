@@ -151,6 +151,8 @@ interface IKnowledgerNFT {
     /**
      * @dev This method makes possible return the contents related to a publisher.
      *
+     * @param _publisher Publisher address
+     *
      * @return {Content[]} Returns the contents, otherwise throws.
      */
     function getPublisherContents(address _publisher)
@@ -161,14 +163,24 @@ interface IKnowledgerNFT {
     /**
      * @dev This method makes possible return the contents related to a buyer.
      *
+     * @param _buyer Buyer address
+     *
      * @return {Content[]} Returns the contents, otherwise throws.
      */
-    function getBuyerContents() external view returns (Content[] memory);
+    function getBuyerContents(address _buyer)
+        external
+        view
+        returns (Content[] memory);
 
     /**
      * @dev This method makes possible return the contents related to a reviewer.
      *
+     * @param _reviewer Reviewer address
+     *
      * @return {Content[]} Returns the contents, otherwise throws.
      */
-    function getReviewerContents() external view returns (Content[] memory);
+    function getReviewerContents(address _reviewer)
+        external
+        view
+        returns (Content[] memory);
 }

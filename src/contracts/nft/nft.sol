@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import {AbstractKnowledgerNFT} from "./nft.abstract.sol";
 import {IKnowledgerNFT} from "./nft.interface.sol";
-import {Assessment, Content, ProposeContentRequest, Purchase} from "./content/content.struct.sol";
+import {Assessment, Content as ContentStruct, ProposeContentRequest, Purchase} from "./content/content.struct.sol";
 import {AssessmentApproved, AssessmentDenied} from "./content/content.constants.sol";
 import {Number} from "../utils/number.sol";
 import {AddressUtils} from "../utils/address.sol";
@@ -203,7 +203,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
         checkPurchase(_tokenId)
         returns (bool)
     {
-        Content memory _content = content.getContent(_tokenId);
+        ContentStruct memory _content = content.getContent(_tokenId);
         buyer.buyContent(_content, _buyer);
 
         // TODO: Emit some event
@@ -218,7 +218,7 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
         external
         view
         checkExistingToken(_tokenId)
-        returns (Content memory)
+        returns (ContentStruct memory)
     {
         return content.getContent(_tokenId);
     }
@@ -229,17 +229,19 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
     function getPublisherContents(address _publisher)
         external
         view
-        returns (Content[] memory)
+        returns (ContentStruct[] memory)
     {
         uint256[] memory _tokenIds = publisher.getTokens(_publisher);
-        Content[] memory _contents = new Content[](_tokenIds.length);
+        ContentStruct[] memory _contents = new ContentStruct[](
+            _tokenIds.length
+        );
         uint256 _count = 0;
-        for (uint256 i; i < _tokenIds.length; i++) {
-            Content memory _content = content.getContent(_tokenIds[i]);
+        for (uint256 i = 0; i < _tokenIds.length; i++) {
+            ContentStruct memory _content = content.getContent(0);
             require(
                 address(_content.publisher) == _publisher,
                 string.concat(
-                    "This content doesn't have any address assigned with ",
+                    "Publisher doesn't have access due ",
                     Strings.toHexString(uint160(_content.publisher), 20),
                     " != ",
                     Strings.toHexString(uint160(_publisher), 20)
@@ -254,17 +256,29 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
     /**
      * @dev See {IKnowledgerNFT-getBuyerContents}.
      */
-    function getBuyerContents()
+    function getBuyerContents(address _buyer)
         external
         view
         checkBuyerUser
-        returns (Content[] memory)
+        returns (ContentStruct[] memory)
     {
         uint256[] memory _tokenIds = buyer.getTokens(msg.sender);
-        Content[] memory _contents = new Content[](0);
+        ContentStruct[] memory _contents = new ContentStruct[](
+            _tokenIds.length
+        );
         uint256 _count = 0;
         for (uint256 i; i < _tokenIds.length; i++) {
-            _contents[_count] = content.getContent(_tokenIds[i]);
+            ContentStruct memory _content = content.getContent(_tokenIds[i]);
+            require(
+                address(_content.publisher) == _buyer,
+                string.concat(
+                    "Buyer doesn't have access due ",
+                    Strings.toHexString(uint160(_content.publisher), 20),
+                    " != ",
+                    Strings.toHexString(uint160(_buyer), 20)
+                )
+            );
+            _contents[_count] = _content;
             _count++;
         }
         return _contents;
@@ -273,17 +287,29 @@ contract KnowledgerNFT is AbstractKnowledgerNFT, IKnowledgerNFT {
     /**
      * @dev See {IKnowledgerNFT-getReviewerContents}.
      */
-    function getReviewerContents()
+    function getReviewerContents(address _reviewer)
         external
         view
         checkReviewerUser
-        returns (Content[] memory)
+        returns (ContentStruct[] memory)
     {
         uint256[] memory _tokenIds = reviewer.getTokens(msg.sender);
-        Content[] memory _contents = new Content[](0);
+        ContentStruct[] memory _contents = new ContentStruct[](
+            _tokenIds.length
+        );
         uint256 _count = 0;
         for (uint256 i; i < _tokenIds.length; i++) {
-            _contents[_count] = content.getContent(_tokenIds[i]);
+            ContentStruct memory _content = content.getContent(_tokenIds[i]);
+            require(
+                address(_content.publisher) == _reviewer,
+                string.concat(
+                    "Reviewer doesn't have access due ",
+                    Strings.toHexString(uint160(_content.publisher), 20),
+                    " != ",
+                    Strings.toHexString(uint160(_reviewer), 20)
+                )
+            );
+            _contents[_count] = _content;
             _count++;
         }
         return _contents;

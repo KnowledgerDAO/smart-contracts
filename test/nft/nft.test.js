@@ -118,11 +118,6 @@ contract("KnowledgerNFT", function ([owner, publisher, reviewer1, reviewer2, rev
     describe(".getPublisherContents", () => {
         it("should retrieve the list of contents assigned successfully", async () => {
             const [result]  = await knowledgerNFT.getPublisherContents.call(publisher, { from: publisher });
-            console.log(result);
-            
-            const response  = await contentContract.getContent.call(0, { from: publisher });
-            console.log(response);
-
             const [tokenId, contentURI] = result;
             expect(Number(tokenId)).to.eq(0);
             expect(contentURI).to.eq("about:blank");
