@@ -10,9 +10,10 @@
     "compile": "truffle compile",
     "contract-size": "truffle run contract-size",
     "deploy": "yarn compile && rm -f ./build/*.json && truffle migrate",
+    "deploy:testnet": "truffle migrate --network polygon_infura_testnet --config=truffle-config.polygon.js -f 1 --to 1 --decribe-json",
     "test": "truffle test",
-    "test:verbose": "truffle test --verbose-rpc",    
-    "test:stacktrace": "truffle test --stacktrace",    
+    "test:verbose": "truffle test --verbose-rpc",
+    "test:stacktrace": "truffle test --stacktrace",
     "test:docker": "docker-compose build && docker-compose -p knowledger-test-service up -V --force-recreate --exit-code-from truffle",
     "posttest:docker": "docker-compose -p knowledger-test-service down -v"
   },
@@ -26,6 +27,8 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.6.0",
+    "@truffle/hdwallet-provider": "^2.0.13",
+    "dotenv": "^16.0.1",
     "truffle-contract-size": "^2.0.1"
   }
 }
