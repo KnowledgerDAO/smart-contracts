@@ -1,9 +1,10 @@
 # BASE IMAGE
-FROM node:16-bullseye-slim as base
+FROM node:18-bullseye-slim as base
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
         build-essential \
+        git \
         python3 && \
     rm -fr /var/lib/apt/lists/* && \
     rm -rf /etc/apt/sources.list.d/*
@@ -19,7 +20,8 @@ WORKDIR /home/app
 COPY package.json /home/app
 COPY yarn.lock /home/app
 
-RUN yarn install --quiet
+RUN export GIT_SSL_NO_VERIFY=1 && \
+        yarn install --quiet
 
 COPY ./truffle-config.js /home/app
 COPY ./src/contracts /home/app/contracts
